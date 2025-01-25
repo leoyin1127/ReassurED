@@ -10,7 +10,10 @@ module.exports = function (api) {
         "whitelist": null,
         "safe": false,
         "allowUndefined": true
-      }]
+      }],
+      '@babel/plugin-transform-export-namespace-from',
+      '@babel/plugin-transform-template-literals',
+      'react-native-reanimated/plugin'
     ]
   };
 };

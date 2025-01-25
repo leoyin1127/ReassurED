@@ -38,6 +38,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "scheme": "com.auth0samples.auth0"
   }
 }

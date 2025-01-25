@@ -1,79 +1,44 @@
-import React from 'react';
-import { Alert, Button, StyleSheet, Text, View } from 'react-native';
-import { useAuth0, Auth0Provider } from 'react-native-auth0';
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import { Auth0Provider } from 'react-native-auth0';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import config from './auth0-configuration';
 import { NavigationContainer } from '@react-navigation/native';
-import { useAuth } from './src/hooks/useAuth';
-
-// Create an AuthContext component
-const AuthContext = React.createContext(null);
-
-export const useAuthContext = () => React.useContext(AuthContext);
-
-const Home = () => {
-  const { authorize, clearSession, user, error, getCredentials, isLoading } = useAuth0();
-
-  const onLogin = async () => {
-    try {
-      await authorize();
-      let credentials = await getCredentials();
-      Alert.alert('AccessToken: ' + credentials.accessToken);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const loggedIn = user !== undefined && user !== null;
-
-  const onLogout = async () => {
-    try {
-      await clearSession();
-    } catch (e) {
-      console.log('Log out cancelled');
-    }
-  };
-
-  if (isLoading) {
-    return <View style={styles.container}><Text>Loading</Text></View>;
-  }
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}> Auth0Sample - Login </Text>
-      {user && <Text>You are logged in as {user.name}</Text>}
-      {!user && <Text>You are not logged in</Text>}
-      {error && <Text>{error.message}</Text>}
-      <Button
-        onPress={loggedIn ? onLogout : onLogin}
-        title={loggedIn ? 'Log Out' : 'Log In'}
-      />
-    </View>
-  );
-};
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { AuthProvider } from './src/context/AuthContext';
 
 function App() {
-  return (
-    <Auth0Provider
-      domain={'your-auth0-domain'}
-      clientId={'your-client-id'}
-    >
-      <AuthProvider>
-        <NavigationContainer>
-          <Home />
-        </NavigationContainer>
-      </AuthProvider>
-    </Auth0Provider>
-  );
-}
+  useEffect(() => {
+    // Verify AsyncStorage is working
+    const testAsyncStorage = async () => {
+      try {
+        await AsyncStorage.setItem('test', 'test');
+        await AsyncStorage.removeItem('test');
+        console.log('AsyncStorage is working properly');
+      } catch (error) {
+        console.error('AsyncStorage test failed:', error);
+      }
+    };
 
-// Auth Provider component
-function AuthProvider({ children }) {
-  const auth = useAuth();
+    testAsyncStorage();
+  }, []);
 
   return (
-    <AuthContext.Provider value={auth}>
-      {children}
-    </AuthContext.Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Auth0Provider
+        domain={config.domain}
+        clientId={config.clientId}
+        redirectUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/callback`}
+        logoutUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/logout`}
+      >
+        <AuthProvider>
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </Auth0Provider>
+    </GestureHandlerRootView>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth0 } from 'react-native-auth0';
 import { userService } from '../services/userService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 export const useAuth = () => {
     const { user, isLoading, error, authorize, clearSession } = useAuth0();
@@ -50,7 +51,12 @@ export const useAuth = () => {
     const logout = async () => {
         try {
             await clearSession();
-            await AsyncStorage.clear();
+            // Use try-catch for each storage operation
+            try {
+                await AsyncStorage.clear();
+            } catch (storageError) {
+                console.warn('Error clearing AsyncStorage:', storageError);
+            }
             setUserProfile(null);
         } catch (error) {
             console.error('Logout error:', error);
