@@ -1,10 +1,17 @@
 import React from 'react';
-import {Alert, Button, StyleSheet, Text, View} from 'react-native';
-import {useAuth0, Auth0Provider} from 'react-native-auth0';
+import { Alert, Button, StyleSheet, Text, View } from 'react-native';
+import { useAuth0, Auth0Provider } from 'react-native-auth0';
 import config from './auth0-configuration';
+import { NavigationContainer } from '@react-navigation/native';
+import { useAuth } from './src/hooks/useAuth';
+
+// Create an AuthContext component
+const AuthContext = React.createContext(null);
+
+export const useAuthContext = () => React.useContext(AuthContext);
 
 const Home = () => {
-  const {authorize, clearSession, user, error, getCredentials, isLoading} = useAuth0();
+  const { authorize, clearSession, user, error, getCredentials, isLoading } = useAuth0();
 
   const onLogin = async () => {
     try {
@@ -44,13 +51,31 @@ const Home = () => {
   );
 };
 
-const App = () => {
+function App() {
   return (
-    <Auth0Provider domain={config.domain} clientId={config.clientId}>
-      <Home />
+    <Auth0Provider
+      domain={'your-auth0-domain'}
+      clientId={'your-client-id'}
+    >
+      <AuthProvider>
+        <NavigationContainer>
+          <Home />
+        </NavigationContainer>
+      </AuthProvider>
     </Auth0Provider>
   );
-};
+}
+
+// Auth Provider component
+function AuthProvider({ children }) {
+  const auth = useAuth();
+
+  return (
+    <AuthContext.Provider value={auth}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {

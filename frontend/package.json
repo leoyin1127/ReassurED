@@ -2,23 +2,28 @@
   "name": "00-login-expo",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web"
+    "start": "npx expo start --dev-client",
+    "android": "npx expo run:android",
+    "ios": "npx expo run:ios",
+    "web": "npx expo start --web"
   },
   "dependencies": {
-    "expo": "~48.0.18",
-    "expo-splash-screen": "~0.18.2",
-    "expo-status-bar": "~1.4.0",
+    "expo": "~52.0.0",
+    "expo-splash-screen": "~0.26.4",
+    "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
-    "react-dom": "18.0.0",
-    "react-native": "0.71.8",
+    "react-dom": "18.2.0",
+    "react-native": "0.76.6",
     "react-native-auth0": "^3.0.0",
-    "react-native-web": "~0.18.7"
+    "react-native-web": "~0.19.10",
+    "firebase": "^10.8.0",
+    "@react-native-async-storage/async-storage": "^1.21.0",
+    "react-native-dotenv": "^3.4.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.20.0",
+    "@react-native-community/cli-platform-ios": "^13.0.0"
   },
-  "private": true
+  "private": true,
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }

@@ -77,3 +77,5 @@ ios
 android
 
 # @end expo-cli
+
+.env
