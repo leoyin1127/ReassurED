@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import googlemaps
 import os
 
-from backend.distanceCalc import user_ref
 BASE_URL = "https://www.quebec.ca/en/health/health-system-and-services/service-organization/quebec-health-system-and-its-services/situation-in-emergency-rooms-in-quebec"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -92,7 +91,7 @@ def scrape_hospital_data():
 if __name__ == "__main__":
     # Initialize Firebase (replace with your key file path)
     cred = fba.credentials.Certificate("../resource/mchacks-39f08-firebase-adminsdk-fbsvc-e9f2462832.json")
-    app = fba.initialize_app(cred, name='HospitalFindingApp')
+    app = fba.initialize_app(cred)
 
     # Initialize Firestore
     db = firestore.client()
@@ -112,6 +111,8 @@ if __name__ == "__main__":
 
     for hospital in data:
         hospital_address = transform_geocode(hospital['address'])
+        hospital['Lat'] = gmaps.geocode(hospital['address'])[0]['geometry']['location']['lat']
+        hospital['Lng'] = gmaps.geocode(hospital['address'])[0]['geometry']['location']['lng']
         # distance_result = gmaps.distance_matrix(user_loc_str, transform_geocode(hospital['address']), mode="driving")
         distance_result = requests.get(f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={user_loc_str}&destinations={hospital_address}&key={google_api_key}")
         # print(distance_result.text)
