@@ -163,4 +163,4 @@ For support, please email support@reassured.com or open an issue in the reposito
 
 ---
 
-**Happy coding!** If you have any questions about the project, feel free to reach out in the Issues section or contact us via email.
+**Thank you for your interest in ReassurED!** If you have any questions about the project, feel free to reach out in the Issues section or contact us via email.
