@@ -1,7 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth0 } from 'react-native-auth0';
 import { LoginScreen } from '../screens/LoginScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { BottomTabNavigator } from './BottomTabNavigator';
 
 const Stack = createStackNavigator();
 
@@ -18,12 +18,9 @@ export function AppNavigator() {
                 />
             ) : (
                 <Stack.Screen
-                    name="Profile"
-                    component={ProfileScreen}
-                    options={{
-                        headerTitle: 'My Profile',
-                        headerLeft: null // Disable back button
-                    }}
+                    name="Main"
+                    component={BottomTabNavigator}
+                    options={{ headerShown: false }}
                 />
             )}
         </Stack.Navigator>

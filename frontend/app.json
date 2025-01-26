@@ -12,6 +12,13 @@
         {
           "domain": "dev-uzfzx46mssm2lnwi.ca.auth0.com"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow ReassurED to use your location at all times.",
+          "locationWhenInUsePermission": "Allow ReassurED to use your location while the app is in use."
+        }
       ]
     ],
     "splash": {
@@ -27,18 +34,40 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.auth0samples"
+      "bundleIdentifier": "com.reassured.app",
+      "config": {
+        "googleMapsApiKey": "${process.env.GOOGLE_MAPS_API_KEY}"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "NSLocationWhenInUseUsageDescription": "ReassurED needs your location to find nearby hospitals and provide accurate wait times.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ReassurED needs your location to find nearby hospitals and provide accurate wait times.",
+        "NSLocationAlwaysUsageDescription": "ReassurED needs your location to find nearby hospitals and provide accurate wait times.",
+        "NSLocationUsageDescription": "ReassurED needs your location to find nearby hospitals and provide accurate wait times."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.auth0samples"
+      "package": "com.reassured.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "${process.env.GOOGLE_MAPS_API_KEY}"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "com.auth0samples.auth0"
+    "scheme": "com.reassured.app"
   }
 }

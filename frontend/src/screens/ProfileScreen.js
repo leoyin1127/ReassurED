@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
 import { useAuthContext } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function ProfileScreen() {
     const { userProfile, updateProfile, logout } = useAuthContext();
@@ -17,8 +18,38 @@ export function ProfileScreen() {
         }
     };
 
+    // Add this function to debug AsyncStorage contents
+    const checkAsyncStorage = async () => {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const items = await AsyncStorage.multiGet(keys);
+            console.log('AsyncStorage contents:', items);
+        } catch (error) {
+            console.error('Error checking AsyncStorage:', error);
+        }
+    };
+
+    const clearAsyncStorage = async () => {
+        try {
+            await AsyncStorage.clear();
+            console.log('AsyncStorage cleared');
+        } catch (error) {
+            console.error('Error clearing AsyncStorage:', error);
+        }
+    };
+
+    // Add it to your logout function
+    const handleLogout = async () => {
+        await clearAsyncStorage();
+        logout();  // your existing logout function
+    };
+
+    useEffect(() => {
+        checkAsyncStorage();
+    }, []);
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Image
                     source={{ uri: userProfile?.picture }}
@@ -28,39 +59,48 @@ export function ProfileScreen() {
                 <Text style={styles.email}>{userProfile?.email}</Text>
             </View>
 
-            <View style={styles.content}>
-                <Text style={styles.sectionTitle}>Bio</Text>
-                <Text style={styles.bio}>{userProfile?.bio || 'No bio added yet'}</Text>
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Personal Information</Text>
+                <View style={styles.infoItem}>
+                    <Text style={styles.label}>Phone</Text>
+                    <Text style={styles.value}>{userProfile?.phoneNumber || 'Not set'}</Text>
+                </View>
+                <View style={styles.infoItem}>
+                    <Text style={styles.label}>Emergency Contact</Text>
+                    <Text style={styles.value}>{userProfile?.emergencyContact || 'Not set'}</Text>
+                </View>
             </View>
 
-            <View style={styles.footer}>
-                <TouchableOpacity
-                    style={styles.updateButton}
-                    onPress={handleUpdateProfile}
-                >
-                    <Text style={styles.buttonText}>Update Profile</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={logout}
-                >
-                    <Text style={styles.buttonText}>Logout</Text>
-                </TouchableOpacity>
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Medical Information</Text>
+                <View style={styles.infoItem}>
+                    <Text style={styles.label}>Allergies</Text>
+                    <Text style={styles.value}>{userProfile?.allergies || 'None'}</Text>
+                </View>
+                <View style={styles.infoItem}>
+                    <Text style={styles.label}>Medications</Text>
+                    <Text style={styles.value}>{userProfile?.medications || 'None'}</Text>
+                </View>
             </View>
-        </View>
+
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5',
     },
     header: {
+        backgroundColor: '#fff',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#f8f9fa',
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
     },
     profilePicture: {
         width: 100,
@@ -77,37 +117,38 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#666',
     },
-    content: {
-        padding: 20,
+    section: {
+        backgroundColor: '#fff',
+        margin: 10,
+        padding: 15,
+        borderRadius: 10,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
-        marginBottom: 10,
+        marginBottom: 15,
         color: '#333',
     },
-    bio: {
-        fontSize: 16,
+    infoItem: {
+        marginBottom: 15,
+    },
+    label: {
+        fontSize: 14,
         color: '#666',
-        lineHeight: 24,
+        marginBottom: 5,
     },
-    footer: {
-        padding: 20,
-    },
-    updateButton: {
-        backgroundColor: '#0056b3',
-        padding: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 10,
+    value: {
+        fontSize: 16,
+        color: '#333',
     },
     logoutButton: {
-        backgroundColor: '#dc3545',
+        margin: 10,
         padding: 15,
-        borderRadius: 8,
+        backgroundColor: '#dc3545',
+        borderRadius: 10,
         alignItems: 'center',
     },
-    buttonText: {
+    logoutText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
