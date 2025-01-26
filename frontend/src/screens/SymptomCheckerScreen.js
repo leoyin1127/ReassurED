@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetPicker } from '../components/BottomSheetPicker';
+import { db } from '../config/firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { useAuthContext } from '../context/AuthContext';
+import { symptomService } from '../services/symptomService';
 // If you have a searchable dropdown library, you would import it here
 // For voice input, you might use @react-native-community/voice or similar
 
 export function SymptomCheckerScreen({ navigation }) {
+    const { userProfile } = useAuthContext();
     const [symptom, setSymptom] = useState('');
     const [painLevel, setPainLevel] = useState('');
     const [duration, setDuration] = useState('');
@@ -43,6 +48,76 @@ export function SymptomCheckerScreen({ navigation }) {
             updatedConditions.push(condition);
         }
         setChronicConditions(updatedConditions);
+    };
+
+    const saveSymptoms = async (symptoms, triageLevel) => {
+        try {
+            if (!userProfile?.auth0Id) {
+                console.warn('No user ID available');
+                return;
+            }
+
+            const symptomData = {
+                symptoms: symptoms,
+                triageLevel: triageLevel,
+                responses: {
+                    primarySymptom: symptom,
+                    painLevel,
+                    duration,
+                    consciousness,
+                    breathing,
+                    bleeding,
+                    chronicConditions,
+                    age,
+                    isPregnant,
+                    recentTrauma,
+                    temperature
+                }
+            };
+
+            const symptomId = await symptomService.saveSymptoms(userProfile.auth0Id, symptomData);
+            return symptomId;
+        } catch (error) {
+            console.error('Error saving symptoms:', error);
+            throw error;
+        }
+    };
+
+    const handleComplete = async (triageLevel) => {
+        try {
+            const symptoms = {
+                primary: symptom,
+                painLevel,
+                duration,
+                // Include other symptom data
+            };
+
+            const symptomId = await saveSymptoms(symptoms, triageLevel);
+
+            navigation.navigate('HospitalRecommendation', {
+                triageLevel: triageLevel,
+                symptoms: symptoms,
+                symptomId: symptomId
+            });
+        } catch (error) {
+            Alert.alert(
+                'Error',
+                'Failed to save your symptoms. Please try again.',
+                [
+                    {
+                        text: 'Retry',
+                        onPress: () => handleComplete(triageLevel)
+                    },
+                    {
+                        text: 'Continue Anyway',
+                        onPress: () => navigation.navigate('HospitalRecommendation', {
+                            triageLevel: triageLevel,
+                            symptoms: symptoms
+                        })
+                    }
+                ]
+            );
+        }
     };
 
     const handleNext = () => {

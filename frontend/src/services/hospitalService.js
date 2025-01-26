@@ -60,14 +60,11 @@ export const fetchHospitals = async () => {
         }
 
         const data = snapshot.data();
-        console.log('Raw Firestore data:', data);
-
         const hospitalsArray = data.hospitals || [];
         const formattedHospitals = hospitalsArray.map((hospital, index) =>
             formatHospitalData(hospital, index)
         );
 
-        console.log('Formatted hospitals data:', formattedHospitals);
         return formattedHospitals;
     } catch (error) {
         console.error('Error fetching hospitals:', error);

@@ -17,7 +17,7 @@ export function LoginScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Image
-                    source={require('../../assets/icon.png')} // Add your logo
+                    source={require('../../assets/logo.png')} // Add your logo
                     style={styles.logo}
                 />
                 <Text style={styles.title}>ReassurED</Text>

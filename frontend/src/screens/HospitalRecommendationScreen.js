@@ -110,14 +110,14 @@ export function HospitalRecommendationScreen({ navigation, route }) {
             try {
                 console.log('Starting to load hospitals...');
                 const hospitalsData = await fetchHospitals();
-                console.log('Fetched hospitals:', hospitalsData);
+                // console.log('Fetched hospitals:', hospitalsData);
 
                 const sortedHospitals = getSortedHospitals(
                     hospitalsData,
                     route.params?.triageLevel,
                     userLocation
                 );
-                console.log('Sorted hospitals:', sortedHospitals);
+                // console.log('Sorted hospitals:', sortedHospitals);
 
                 setHospitals(sortedHospitals);
             } catch (error) {
