@@ -43,11 +43,9 @@ export function ProfileScreen() {
     // Add it to your logout function
     const handleLogout = async () => {
         try {
-            // Clear local storage first
             await clearAsyncStorage();
-            // Use the proper logout parameters
             await logout({
-                returnTo: `${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/logout`
+                returnTo: 'com.reassured.app.auth0://dev-uzfzx46mssm2lnwi.ca.auth0.com/ios/com.reassured.app/logout'
             });
         } catch (error) {
             console.error('Logout error:', error);
