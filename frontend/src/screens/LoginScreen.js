@@ -21,7 +21,7 @@ export function LoginScreen() {
                     style={styles.logo}
                 />
                 <Text style={styles.title}>ReassurED</Text>
-                <Text style={styles.subtitle}>Your Mental Health Companion</Text>
+                <Text style={styles.subtitle}>Your all-in-one ED Visit Companion</Text>
             </View>
 
             <View style={styles.footer}>
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     logo: {
-        width: 120,
+        width: 200,
         height: 120,
         marginBottom: 20,
     },
