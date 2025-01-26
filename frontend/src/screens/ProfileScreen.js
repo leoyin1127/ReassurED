@@ -44,9 +44,7 @@ export function ProfileScreen() {
     const handleLogout = async () => {
         try {
             await clearAsyncStorage();
-            await logout({
-                returnTo: 'com.reassured.app.auth0://dev-uzfzx46mssm2lnwi.ca.auth0.com/ios/com.reassured.app/logout'
-            });
+            await logout();
         } catch (error) {
             console.error('Logout error:', error);
         }

@@ -50,10 +50,7 @@ export const useAuth = () => {
 
     const logout = async (options = {}) => {
         try {
-            await clearSession({
-                returnTo: options.returnTo || 'com.reassured.app.auth0://dev-uzfzx46mssm2lnwi.ca.auth0.com/ios/com.reassured.app/logout',
-                federated: true
-            });
+            await clearSession();
             try {
                 await AsyncStorage.clear();
             } catch (storageError) {
