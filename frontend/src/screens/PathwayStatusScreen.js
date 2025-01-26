@@ -1,48 +1,125 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useHospitalContext } from '../context/HospitalContext';
+import { formatHospitalStats } from '../services/hospitalService';
 
-export function PathwayStatusScreen({ route }) {
-    const { hospital } = route.params || {};
+export function PathwayStatusScreen() {
+    const { selectedHospital, triageLevel } = useHospitalContext();
+    const stats = selectedHospital ? formatHospitalStats(selectedHospital, triageLevel) : null;
+
+    if (!selectedHospital) {
+        return (
+            <View style={[styles.container, styles.centerContent]}>
+                <Text style={styles.noDataText}>No hospital selected</Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container}>
+            {/* Status Card */}
             <View style={styles.card}>
                 <Text style={styles.title}>Current Care Status</Text>
                 <View style={styles.statusContainer}>
                     <View style={styles.statusItem}>
-                        <Text style={styles.label}>Location</Text>
-                        <Text style={styles.value}>{hospital?.name || 'Not Selected'}</Text>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="location" size={20} color="#0056b3" />
+                        </View>
+                        <View style={styles.statusContent}>
+                            <Text style={styles.label}>Location</Text>
+                            <Text style={styles.value}>{selectedHospital?.name || 'Not Selected'}</Text>
+                            <Text style={styles.address}>{selectedHospital?.address}</Text>
+                        </View>
                     </View>
+
+                    <View style={styles.divider} />
+
                     <View style={styles.statusItem}>
-                        <Text style={styles.label}>Queue Position</Text>
-                        <Text style={styles.value}>#3</Text>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="people" size={20} color="#0056b3" />
+                        </View>
+                        <View style={styles.statusContent}>
+                            <Text style={styles.label}>Queue Position</Text>
+                            <Text style={styles.value}>#{selectedHospital?.waiting_count || '0'}</Text>
+                        </View>
                     </View>
+
+                    <View style={styles.divider} />
+
                     <View style={styles.statusItem}>
-                        <Text style={styles.label}>Estimated Wait</Text>
-                        <Text style={styles.value}>{hospital?.waitTime || 'Unknown'}</Text>
+                        <View style={styles.iconContainer}>
+                            <Ionicons name="time" size={20} color="#0056b3" />
+                        </View>
+                        <View style={styles.statusContent}>
+                            <Text style={styles.label}>Estimated Wait</Text>
+                            <Text style={styles.value}>{stats?.estimatedTotalTime || 'Unknown'}</Text>
+                            <View style={styles.timeBreakdown}>
+                                <Text style={styles.timeDetail}>
+                                    <Ionicons name="car-outline" size={12} color="#666" /> Travel: {stats?.travelTime || 'N/A'}
+                                </Text>
+                                <Text style={styles.timeDetail}>
+                                    <Ionicons name="hourglass-outline" size={12} color="#666" /> Wait: {stats?.userTriageWaitTime || 'N/A'}
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
             </View>
 
-            <View style={styles.timelineCard}>
-                <Text style={styles.subtitle}>Care Timeline</Text>
+            {/* Hospital Stats Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="stats-chart" size={24} color="#0056b3" />
+                    <Text style={styles.subtitle}>Hospital Statistics</Text>
+                </View>
+                <View style={styles.statsGrid}>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Waiting</Text>
+                        <Text style={styles.statValue}>{stats?.waitingCount}</Text>
+                        <Text style={styles.statUnit}>patients</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Occupancy</Text>
+                        <Text style={styles.statValue}>{stats?.stretcherOccupancy}</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Avg. Wait</Text>
+                        <Text style={styles.statValue}>{stats?.avgWaitingTime}</Text>
+                    </View>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statLabel}>Avg. Stay</Text>
+                        <Text style={styles.statValue}>{stats?.avgStretcherTime}</Text>
+                    </View>
+                </View>
+            </View>
+
+            {/* Timeline Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="git-branch" size={24} color="#0056b3" />
+                    <Text style={styles.subtitle}>Care Timeline</Text>
+                </View>
                 <View style={styles.timeline}>
-                    <View style={[styles.timelineItem, styles.completed]}>
-                        <Text style={styles.timelineText}>Check-in Complete</Text>
-                        <Text style={styles.timelineTime}>2:30 PM</Text>
-                    </View>
-                    <View style={[styles.timelineItem, styles.active]}>
-                        <Text style={styles.timelineText}>Waiting for Triage</Text>
-                        <Text style={styles.timelineTime}>Current</Text>
-                    </View>
-                    <View style={styles.timelineItem}>
-                        <Text style={styles.timelineText}>Doctor Consultation</Text>
-                        <Text style={styles.timelineTime}>Pending</Text>
-                    </View>
-                    <View style={styles.timelineItem}>
-                        <Text style={styles.timelineText}>Treatment</Text>
-                        <Text style={styles.timelineTime}>Pending</Text>
-                    </View>
+                    {[
+                        { status: 'completed', text: 'Check-in Complete', time: '2:30 PM', icon: 'checkmark-circle' },
+                        { status: 'active', text: 'Waiting for Triage', time: 'Current', icon: 'time' },
+                        { status: 'pending', text: 'Doctor Consultation', time: 'Pending', icon: 'medical' },
+                        { status: 'pending', text: 'Treatment', time: 'Pending', icon: 'bandage' }
+                    ].map((item, index) => (
+                        <View key={index} style={styles.timelineItem}>
+                            <View style={[styles.timelineDot, styles[item.status]]}>
+                                <Ionicons name={item.icon} size={16} color={item.status === 'pending' ? '#666' : '#fff'} />
+                            </View>
+                            <View style={styles.timelineContent}>
+                                <Text style={[styles.timelineText, styles[`${item.status}Text`]]}>
+                                    {item.text}
+                                </Text>
+                                <Text style={styles.timelineTime}>{item.time}</Text>
+                            </View>
+                            {index < 3 && <View style={[styles.timelineLine, styles[`${item.status}Line`]]} />}
+                        </View>
+                    ))}
                 </View>
             </View>
         </ScrollView>
@@ -52,34 +129,48 @@ export function PathwayStatusScreen({ route }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
-        padding: 16,
+        backgroundColor: '#f8f9fa',
     },
     card: {
         backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
+        borderRadius: 16,
+        margin: 16,
+        padding: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 8,
+        elevation: 4,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333',
+        color: '#2c3e50',
+        marginBottom: 20,
     },
     statusContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
+        gap: 16,
     },
     statusItem: {
-        minWidth: '30%',
-        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    iconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#e3f2fd',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    statusContent: {
+        flex: 1,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#e1e4e8',
+        marginVertical: 8,
     },
     label: {
         fontSize: 14,
@@ -88,49 +179,135 @@ const styles = StyleSheet.create({
     },
     value: {
         fontSize: 18,
+        color: '#2c3e50',
         fontWeight: '600',
-        color: '#333',
     },
-    timelineCard: {
-        backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+    address: {
+        fontSize: 13,
+        color: '#666',
+        marginTop: 2,
+    },
+    timeBreakdown: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 4,
+    },
+    timeDetail: {
+        fontSize: 13,
+        color: '#666',
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        gap: 12,
     },
     subtitle: {
         fontSize: 20,
         fontWeight: '600',
-        marginBottom: 16,
-        color: '#333',
+        color: '#2c3e50',
+    },
+    statsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 16,
+    },
+    statBox: {
+        flex: 1,
+        minWidth: '45%',
+        backgroundColor: '#f8f9fa',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    statLabel: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 8,
+    },
+    statValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#0056b3',
+    },
+    statUnit: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 4,
     },
     timeline: {
         paddingLeft: 8,
     },
     timelineItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        position: 'relative',
+        paddingLeft: 30,
+        marginBottom: 24,
+    },
+    timelineDot: {
+        position: 'absolute',
+        left: 0,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        borderLeftWidth: 2,
-        borderLeftColor: '#ddd',
+        backgroundColor: '#d3d3d3',
     },
-    completed: {
-        borderLeftColor: '#4CAF50',
+    timelineLine: {
+        position: 'absolute',
+        left: 15,
+        top: 32,
+        width: 2,
+        height: 40,
+        backgroundColor: '#d3d3d3',
     },
-    active: {
-        borderLeftColor: '#2196F3',
+    timelineContent: {
+        marginLeft: 12,
     },
     timelineText: {
         fontSize: 16,
-        color: '#333',
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 4,
     },
     timelineTime: {
         fontSize: 14,
         color: '#666',
+    },
+    completed: {
+        backgroundColor: '#4caf50',
+    },
+    active: {
+        backgroundColor: '#0056b3',
+    },
+    pending: {
+        backgroundColor: '#f5f5f5',
+    },
+    completedText: {
+        color: '#4caf50',
+    },
+    activeText: {
+        color: '#0056b3',
+    },
+    pendingText: {
+        color: '#666',
+    },
+    completedLine: {
+        backgroundColor: '#4caf50',
+    },
+    activeLine: {
+        backgroundColor: '#0056b3',
+    },
+    pendingLine: {
+        backgroundColor: '#d3d3d3',
+    },
+    centerContent: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noDataText: {
+        fontSize: 18,
+        color: '#666',
+        textAlign: 'center',
     },
 }); 

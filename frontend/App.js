@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
+import { HospitalProvider } from './src/context/HospitalContext';
 
 function App() {
   useEffect(() => {
@@ -33,9 +34,11 @@ function App() {
         logoutUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/logout`}
       >
         <AuthProvider>
-          <NavigationContainer>
-            <AppNavigator />
-          </NavigationContainer>
+          <HospitalProvider>
+            <NavigationContainer>
+              <AppNavigator />
+            </NavigationContainer>
+          </HospitalProvider>
         </AuthProvider>
       </Auth0Provider>
     </GestureHandlerRootView>

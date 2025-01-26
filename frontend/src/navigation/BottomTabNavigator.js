@@ -19,7 +19,7 @@ export function BottomTabNavigator() {
                     } else if (route.name === 'FindCare') {
                         iconName = focused ? 'medical' : 'medical-outline';
                     } else if (route.name === 'Status') {
-                        iconName = focused ? 'time' : 'time-outline';
+                        iconName = focused ? 'pulse' : 'pulse-outline';
                     }
 
                     return <Ionicons name={iconName} size={size} color={color} />;
