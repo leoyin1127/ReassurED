@@ -15,27 +15,28 @@ def time_to_minutes(time_str: str) -> float:
     return h * 60.0 + m * 1.0
 
 def percentage_to_float(percentage_str: str) -> float:
-    return float(percentage_str.strip('%')) / 100.0
+    return float(str(percentage_str).strip('%')) / 100.0
 
-load_dotenv()
+if __name__ == "__main__":
+    load_dotenv()
 
-# Initialize Firebase
-firestore_cred = fba.credentials.Certificate("../resource/mchacks-39f08-firebase-adminsdk-fbsvc-e9f2462832.json")
-firestore_app = fba.initialize_app(firestore_cred)
+    # Initialize Firebase
+    firestore_cred = fba.credentials.Certificate("../resource/mchacks-39f08-firebase-adminsdk-fbsvc-e9f2462832.json")
+    firestore_app = fba.initialize_app(firestore_cred)
 
-# Initialize Firestore
-db = firestore.client()
+    # Initialize Firestore
+    db = firestore.client()
 
-data = db.collection("hospital").document("filteredHospitals").get().to_dict()
-hospitals = data.get("hospitals")
+    data = db.collection("hospital").document("filteredHospitals").get().to_dict()
+    hospitals = data.get("hospitals")
 
-for hospital in hospitals:
-    N = float(hospital.get('waiting_count'))
-    T = float(hospital.get('total_people'))
-    O = percentage_to_float(hospital.get('stretcher_occupancy'))
-    A_prev = time_to_minutes(hospital.get('avg_waiting_room_time'))
-    S_prev = time_to_minutes(hospital.get('avg_stretcher_time'))
-    for i in range(1, 6):
-        hospital[f'triage_level_{i}'] = calc(i, N, T, O, A_prev, S_prev)
+    for hospital in hospitals:
+        N = float(hospital.get('waiting_count'))
+        T = float(hospital.get('total_people'))
+        O = percentage_to_float(hospital.get('stretcher_occupancy'))
+        A_prev = time_to_minutes(hospital.get('avg_waiting_room_time'))
+        S_prev = time_to_minutes(hospital.get('avg_stretcher_time'))
+        for i in range(1, 6):
+            hospital[f'triage_level_{i}'] = calc(i, N, T, O, A_prev, S_prev)
 
-db.collection("hospital").document("filteredHospitals").set({"hospitals": hospitals})
+    db.collection("hospital").document("filteredHospitals").set({"hospitals": hospitals})
