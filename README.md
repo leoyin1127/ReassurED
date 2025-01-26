@@ -7,7 +7,6 @@ ReassurED is a mobile application (built with React Native and Expo) designed to
 ## Table of Contents
 - [ReassurED](#reassured)
   - [Table of Contents](#table-of-contents)
-  - [Project Structure](#project-structure)
   - [Features](#features)
   - [Prerequisites](#prerequisites)
   - [Environment Setup](#environment-setup)
@@ -21,30 +20,6 @@ ReassurED is a mobile application (built with React Native and Expo) designed to
   - [Acknowledgments](#acknowledgments)
 
 ---
-
-## Project Structure
-
-.
-├── README.md # (This File)
-└── frontend/
-    ├── App.js
-    ├── index.js
-    ├── metro.config.js
-    ├── package.json
-    ├── app.json
-    ├── babel.config.js
-    ├── .gitignore
-    ├── assets/
-    ├── src/
-    │   ├── components/  # Reusable UI components
-    │   ├── config/      # Configuration files (Firebase, environment validation, etc.)
-    │   ├── context/     # React Context providers for Auth and Hospital data
-    │   ├── hooks/       # Custom React hooks
-    │   ├── navigation/  # Navigation setup for tabs and stacks
-    │   ├── screens/     # Screen components (Login, Symptom Checker, Triage Results, etc.)
-    │   └── services/    # API interactions, including DeepSeek AI calls
-    ├── README.md        # Frontend-specific README
-    └── ...
 
 ## Features
 
