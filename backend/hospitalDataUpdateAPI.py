@@ -8,8 +8,11 @@ import googlemaps
 import os
 from dotenv import load_dotenv
 from typing import Optional
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 app = FastAPI()
+scheduler = AsyncIOScheduler()
 
 # Load environment variables
 load_dotenv()
@@ -22,20 +25,20 @@ gmaps = None
 
 @app.on_event("startup")
 async def startup():
+    # Existing initialization code
     global firebase_app, db, gmaps
-    try:
-        load_dotenv()
-        # Initialize Firebase
-        cred = fba.credentials.Certificate("../resource/mchacks-39f08-firebase-adminsdk-fbsvc-e9f2462832.json")
-        firebase_app = fba.initialize_app(cred)
-        db = firestore.client()
+    cred = fba.credentials.Certificate("...")
+    firebase_app = fba.initialize_app(cred)
+    db = firestore.client()
+    gmaps = googlemaps.Client(key=os.getenv("GOOGLE_MAP_PLATFORM_API_KEY"))
 
-        # Initialize Google Maps
-        google_api_key = os.getenv("GOOGLE_MAP_PLATFORM_API_KEY")
-        gmaps = googlemaps.Client(key=google_api_key)
-    except Exception as e:
-        print(f"Initialization failed: {str(e)}")
-        raise
+    # Start scheduler (runs every 5 minutes)
+    scheduler.add_job(
+        update_hospital_data,
+        trigger=IntervalTrigger(minutes=5),
+        max_instances=1  # Prevent overlapping runs
+    )
+    scheduler.start()
 
 BASE_URL = "https://www.quebec.ca/en/health/health-system-and-services/service-organization/quebec-health-system-and-its-services/situation-in-emergency-rooms-in-quebec"
 HEADERS = {
@@ -233,6 +236,15 @@ async def trigger_hospital_update(background_tasks: BackgroundTasks):
         return {"message": "Hospital data update initiated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.on_event("shutdown")
+async def shutdown():
+    scheduler.shutdown()
+
+@app.post("/update-hospitals")
+async def manual_update(background_tasks: BackgroundTasks):
+    background_tasks.add_task(update_hospital_data)
+    return {"message": "Manual update triggered"}
 
 if __name__ == "__main__":
     import uvicorn
