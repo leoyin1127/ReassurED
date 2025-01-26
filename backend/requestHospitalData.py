@@ -5,12 +5,25 @@ import firebase_admin as fba
 from firebase_admin import firestore
 import json
 from dotenv import load_dotenv
+import googlemaps
+import os
 
+from backend.distanceCalc import user_ref
 BASE_URL = "https://www.quebec.ca/en/health/health-system-and-services/service-organization/quebec-health-system-and-its-services/situation-in-emergency-rooms-in-quebec"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
 
+load_dotenv()  # Load environment variables from.env file
+
+# Initialize Google Maps API client
+google_api_key = os.getenv("GOOGLE_MAP_PLATFORM_API_KEY")
+gmaps = googlemaps.Client(key=google_api_key)
+
+def transform_geocode(address) -> str:
+    geoloc = gmaps.geocode(address)
+    return (str(geoloc[0]['geometry']['location']['lat']) + "%2C"
+            + str(geoloc[0]['geometry']['location']['lng']) + "%7C")
 
 def scrape_hospital_data():
     hospitals = []
@@ -77,20 +90,44 @@ def scrape_hospital_data():
 
 
 if __name__ == "__main__":
-    load_dotenv()  # Load environment variables from.env file
-
     # Initialize Firebase (replace with your key file path)
     cred = fba.credentials.Certificate("../resource/mchacks-39f08-firebase-adminsdk-fbsvc-e9f2462832.json")
-    app = fba.initialize_app(cred)
+    app = fba.initialize_app(cred, name='HospitalFindingApp')
 
     # Initialize Firestore
     db = firestore.client()
+
+    user_ref = db.collection("users").document("google-oauth2|100496775126729065378").get()
+    # print(user_ref.to_dict())
+    user_location = user_ref.to_dict().get('lastLocation')
+    user_loc_str = f"{user_location['latitude']}%2C{user_location['longitude']}%7C"
 
     data = scrape_hospital_data()
 
     for hospital in data:
         if hospital.get('name') == 'Ensemble du Québec':
             data.remove(hospital)
+    # base_url = [
+    #     f"""https://maps.googleapis.com/maps/api/distancematrix/json?origins={user_loc_str}&destinations={destination}&key={google_api_key}"""]
+
+    for hospital in data:
+        hospital_address = transform_geocode(hospital['address'])
+        # distance_result = gmaps.distance_matrix(user_loc_str, transform_geocode(hospital['address']), mode="driving")
+        distance_result = requests.get(f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={user_loc_str}&destinations={hospital_address}&key={google_api_key}")
+        # print(distance_result.text)
+        distance = distance_result.json().get('rows', [{}])[0].get('elements', [{}])[0].get('duration', {}).get('value')
+        # distance_info = distance_result.text.get('rows', [{}])[0].get('elements', [{}])[0]
+        # print(distance_info)
+        hospital['travel_time'] = distance
+        if hospital['estimated_waiting_time'] != "currently not available":
+            wait_time = (int(hospital['estimated_waiting_time'].split(':')[0]) * 3600 +
+                         int(hospital['estimated_waiting_time'].split(':')[1]) * 60)
+            hospital['total_waiting_time'] = (
+                    hospital['travel_time'] +
+                    wait_time)
+        else:
+            hospital['total_waiting_time'] = "currently not available"
+
 
     db.collection("hospital").document("hospitalsData").set({"hospitals": data})
 
