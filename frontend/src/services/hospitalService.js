@@ -5,34 +5,45 @@ import { db } from '../config/firebase';
  * Formats hospital data from Firestore to match component requirements
  */
 const formatHospitalData = (hospital, index) => {
-    // Default coordinates for Montreal hospitals
-    const montrealCoordinates = [
-        { latitude: 45.4961, longitude: -73.6307 }, // Albert-Prévost
-        { latitude: 45.4619, longitude: -73.5702 }, // Douglas
-        // Add more default coordinates as needed
-    ];
-
     return {
         id: index.toString(),
         name: hospital.name || 'Unknown Hospital',
         address: hospital.address || '',
-        coordinate: montrealCoordinates[index] || {
-            latitude: 45.5017,
-            longitude: -73.5673
+        coordinate: {
+            latitude: hospital.Lat || 45.5017,
+            longitude: hospital.Lng || -73.5673
         },
-        estimated_waiting_time: hospital.estimated_waiting_time || 'N/A',
-        travel_time: parseInt(hospital.travel_time) || 0,
+        // All time values are in minutes
+        avg_stretcher_time: Math.round(hospital.avg_stretcher_time) || 0,
+        avg_waiting_room_time: Math.round(hospital.avg_waiting_room_time) || 0,
+        estimated_waiting_time: Math.round(hospital.estimated_waiting_time) || 0,
+        travel_time: Math.round(hospital.travel_time) || 0,
+        // Triage level times (in minutes)
         triage_level_1: Math.round(hospital.triage_level_1) || 0,
         triage_level_2: Math.round(hospital.triage_level_2) || 0,
         triage_level_3: Math.round(hospital.triage_level_3) || 0,
         triage_level_4: Math.round(hospital.triage_level_4) || 0,
         triage_level_5: Math.round(hospital.triage_level_5) || 0,
-        stretcher_occupancy: hospital.stretcher_occupancy || '0%',
-        avg_waiting_room_time: hospital.avg_waiting_room_time || 'N/A',
-        total_people: parseInt(hospital.total_people) || 0,
-        avg_stretcher_time: hospital.avg_stretcher_time || 'N/A',
-        waiting_count: parseInt(hospital.waiting_count) || 0
+        stretcher_occupancy: `${hospital.stretcher_occupancy}%` || '0%',
+        total_people: hospital.total_people?.toString() || '0',
+        total_waiting_time: Math.round(hospital.total_waiting_time) || 0,
+        waiting_count: hospital.waiting_count?.toString() || '0'
     };
+};
+
+/**
+ * Format minutes for display
+ */
+const formatMinutes = (minutes) => {
+    if (!minutes) return 'N/A';
+
+    if (minutes >= 60) {
+        const hours = Math.floor(minutes / 60);
+        const remainingMinutes = minutes % 60;
+        return `${hours}h ${remainingMinutes}m`;
+    }
+
+    return `${minutes}m`;
 };
 
 /**
@@ -40,7 +51,6 @@ const formatHospitalData = (hospital, index) => {
  */
 export const fetchHospitals = async () => {
     try {
-        // Get the hospital document that contains the hospitals array
         const hospitalDoc = doc(db, 'hospital', 'filteredHospitals');
         const snapshot = await getDoc(hospitalDoc);
 
@@ -52,17 +62,13 @@ export const fetchHospitals = async () => {
         const data = snapshot.data();
         console.log('Raw Firestore data:', data);
 
-        // Access the hospitals array from the document
         const hospitalsArray = data.hospitals || [];
-
-        // Format each hospital in the array
         const formattedHospitals = hospitalsArray.map((hospital, index) =>
             formatHospitalData(hospital, index)
         );
 
         console.log('Formatted hospitals data:', formattedHospitals);
         return formattedHospitals;
-
     } catch (error) {
         console.error('Error fetching hospitals:', error);
         throw error;
@@ -70,12 +76,11 @@ export const fetchHospitals = async () => {
 };
 
 /**
- * Formats time from seconds to minutes with appropriate unit
+ * Formats time in minutes with appropriate unit
  */
-export const formatTime = (seconds) => {
-    if (!seconds) return 'N/A';
-    const minutes = Math.round(seconds / 60);
-    return `${minutes} min`;
+export const formatTime = (minutes) => {
+    if (!minutes) return 'N/A';
+    return formatMinutes(minutes);
 };
 
 /**
@@ -90,33 +95,32 @@ export const formatHospitalStats = (hospital, userTriageLevel) => {
         'LEVEL_V': hospital.triage_level_5,
     };
 
-    const userLevelTime = triageLevelMap[userTriageLevel];
-    const totalWaitTime = (userLevelTime || 0) +
-        (parseInt(hospital.travel_time) || 0) +
-        (parseTimeStringToMinutes(hospital.estimated_waiting_time) || 0);
+    const userLevelTime = triageLevelMap[userTriageLevel] || 0;
+    const travelTime = hospital.travel_time || 0;
+
+    // Calculate total journey time as travel time + level wait time
+    const totalJourneyTime = travelTime + userLevelTime;
 
     return {
         waitingCount: hospital.waiting_count?.toString() || '0',
-        stretcherOccupancy: hospital.stretcher_occupancy || 'N/A',
-        avgWaitingTime: hospital.avg_waiting_room_time || 'N/A',
+        stretcherOccupancy: hospital.stretcher_occupancy || '0%',
+        avgWaitingTime: formatTime(hospital.avg_waiting_room_time),
+        avgStretcherTime: formatTime(hospital.avg_stretcher_time),
         totalPeople: hospital.total_people?.toString() || '0',
-        estimatedTotalTime: `${Math.round(totalWaitTime)} min`,
-        userTriageWaitTime: userLevelTime ? `${Math.round(userLevelTime)} min` : 'N/A'
+        estimatedTotalTime: formatTime(totalJourneyTime), // Now just travel + level wait
+        userTriageWaitTime: userLevelTime ? formatTime(userLevelTime) : 'N/A',
+        travelTime: formatTime(travelTime)
     };
 };
 
 /**
  * Calculates and sorts hospitals by relevance
- * @param {Array} hospitals - Array of hospital objects
- * @param {string} triageLevel - User's triage level (e.g., 'LEVEL_I')
- * @param {Object} userLocation - User's current location
- * @returns {Array} Sorted hospitals array
  */
 export const getSortedHospitals = (hospitals, triageLevel, userLocation) => {
     if (!hospitals || !triageLevel) return hospitals || [];
 
     return [...hospitals].sort((a, b) => {
-        // Get the specific triage level wait time
+        // Get the relevant triage level wait time
         const getTriageTime = (hospital, level) => {
             const triageLevelMap = {
                 'LEVEL_I': hospital.triage_level_1,
@@ -128,29 +132,10 @@ export const getSortedHospitals = (hospitals, triageLevel, userLocation) => {
             return triageLevelMap[level] || 0;
         };
 
-        // Calculate total waiting time (triage level time + travel time + current estimated wait)
-        const calculateTotalTime = (hospital) => {
-            const triageTime = getTriageTime(hospital, triageLevel);
-            const travelTime = parseInt(hospital.travel_time) || 0;
-            const estimatedWait = parseTimeStringToMinutes(hospital.estimated_waiting_time) || 0;
-            return triageTime + travelTime + estimatedWait;
-        };
+        // Sort by travel time + triage level wait time
+        const aTotalTime = (a.travel_time || 0) + getTriageTime(a, triageLevel);
+        const bTotalTime = (b.travel_time || 0) + getTriageTime(b, triageLevel);
 
-        const aTotal = calculateTotalTime(a);
-        const bTotal = calculateTotalTime(b);
-
-        return aTotal - bTotal;
+        return aTotalTime - bTotalTime;
     });
-};
-
-/**
- * Convert time string (HH:mm) to minutes
- * @param {string} timeString - Time in format "HH:mm" or "mm:ss"
- * @returns {number} Total minutes
- */
-const parseTimeStringToMinutes = (timeString) => {
-    if (!timeString || timeString === 'N/A') return 0;
-
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return (hours * 60) + minutes;
 }; 

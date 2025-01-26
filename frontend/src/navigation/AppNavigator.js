@@ -2,6 +2,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth0 } from 'react-native-auth0';
 import { LoginScreen } from '../screens/LoginScreen';
 import { BottomTabNavigator } from './BottomTabNavigator';
+import { PathwayStatusScreen } from '../screens/PathwayStatusScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,14 @@ export function AppNavigator() {
                     options={{ headerShown: false }}
                 />
             )}
+            <Stack.Screen
+                name="PathwayStatus"
+                component={PathwayStatusScreen}
+                options={{
+                    title: 'Hospital Status',
+                    headerBackTitle: 'Back',
+                }}
+            />
         </Stack.Navigator>
     );
 } 
