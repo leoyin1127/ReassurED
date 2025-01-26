@@ -48,10 +48,12 @@ export const useAuth = () => {
         }
     };
 
-    const logout = async () => {
+    const logout = async (options = {}) => {
         try {
-            await clearSession();
-            // Use try-catch for each storage operation
+            await clearSession({
+                returnTo: options.returnTo
+            });
+            // Clear local storage and state after successful logout
             try {
                 await AsyncStorage.clear();
             } catch (storageError) {
@@ -60,6 +62,7 @@ export const useAuth = () => {
             setUserProfile(null);
         } catch (error) {
             console.error('Logout error:', error);
+            throw error;
         }
     };
 

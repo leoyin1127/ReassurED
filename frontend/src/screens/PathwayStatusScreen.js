@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
-export function PathwayStatusScreen() {
+export function PathwayStatusScreen({ route }) {
+    const { hospital } = route.params || {};
+
     return (
         <ScrollView style={styles.container}>
             <View style={styles.card}>
@@ -9,7 +11,7 @@ export function PathwayStatusScreen() {
                 <View style={styles.statusContainer}>
                     <View style={styles.statusItem}>
                         <Text style={styles.label}>Location</Text>
-                        <Text style={styles.value}>City Hospital</Text>
+                        <Text style={styles.value}>{hospital?.name || 'Not Selected'}</Text>
                     </View>
                     <View style={styles.statusItem}>
                         <Text style={styles.label}>Queue Position</Text>
@@ -17,7 +19,7 @@ export function PathwayStatusScreen() {
                     </View>
                     <View style={styles.statusItem}>
                         <Text style={styles.label}>Estimated Wait</Text>
-                        <Text style={styles.value}>10 min</Text>
+                        <Text style={styles.value}>{hospital?.waitTime || 'Unknown'}</Text>
                     </View>
                 </View>
             </View>

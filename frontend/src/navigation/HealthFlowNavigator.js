@@ -1,18 +1,16 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// Import your newly created screens
+// Import your screens
 import { SymptomCheckerScreen } from '../screens/SymptomCheckerScreen';
 import { TriageResultsScreen } from '../screens/TriageResultsScreen';
 import { HospitalRecommendationScreen } from '../screens/HospitalRecommendationScreen';
-import { RealTimePathwayScreen } from '../screens/RealTimePathwayScreen';
 
 const Stack = createStackNavigator();
 
 export function HealthFlowNavigator() {
     return (
         <Stack.Navigator>
-
             <Stack.Screen
                 name="SymptomChecker"
                 component={SymptomCheckerScreen}
@@ -30,13 +28,6 @@ export function HealthFlowNavigator() {
                 component={HospitalRecommendationScreen}
                 options={{ headerTitle: 'Hospital Recommendation' }}
             />
-
-            <Stack.Screen
-                name="RealTimePathway"
-                component={RealTimePathwayScreen}
-                options={{ headerTitle: 'Real-Time Pathway' }}
-            />
-
         </Stack.Navigator>
     );
 } 

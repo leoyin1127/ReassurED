@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 // If you have a searchable dropdown library, you would import it here
 // For voice input, you might use @react-native-community/voice or similar
 
@@ -19,54 +19,105 @@ export function SymptomCheckerScreen({ navigation }) {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Symptom Checker</Text>
-            {/* Example text input for symptom or use any advanced UI */}
-            <Text>Symptom:</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="E.g. Fever"
-                value={symptom}
-                onChangeText={setSymptom}
-            />
+        <ScrollView style={styles.container}>
+            <View style={styles.card}>
+                <Text style={styles.title}>Symptom Checker</Text>
 
-            <Text>Pain Level (1-10):</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="E.g. 7"
-                value={painLevel}
-                onChangeText={setPainLevel}
-                keyboardType="numeric"
-            />
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>What's bothering you?</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="E.g. Chest pain, Headache"
+                        value={symptom}
+                        onChangeText={setSymptom}
+                    />
+                </View>
 
-            <Text>Duration (hours/days/weeks):</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="E.g. 2 days"
-                value={duration}
-                onChangeText={setDuration}
-            />
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Pain Level (1-10)</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="E.g. 7"
+                        value={painLevel}
+                        onChangeText={setPainLevel}
+                        keyboardType="numeric"
+                    />
+                </View>
 
-            <Button title="Next" onPress={handleNext} />
-        </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>How long have you been experiencing this?</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="E.g. 2 days"
+                        value={duration}
+                        onChangeText={setDuration}
+                    />
+                </View>
+
+                <TouchableOpacity
+                    style={[styles.button, (!symptom || !painLevel || !duration) && styles.buttonDisabled]}
+                    onPress={handleNext}
+                    disabled={!symptom || !painLevel || !duration}
+                >
+                    <Text style={styles.buttonText}>Next</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#f5f5f5',
+        padding: 16,
+    },
+    card: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     title: {
-        fontSize: 20,
-        marginBottom: 10,
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 24,
+        color: '#333',
+    },
+    inputGroup: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 8,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#ddd',
         borderRadius: 8,
-        padding: 8,
-        marginVertical: 8,
+        padding: 12,
+        fontSize: 16,
+        backgroundColor: '#f8f9fa',
+    },
+    button: {
+        backgroundColor: '#0056b3',
+        padding: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    buttonDisabled: {
+        backgroundColor: '#ccc',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 }); 

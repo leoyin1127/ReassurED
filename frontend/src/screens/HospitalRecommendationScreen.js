@@ -121,7 +121,7 @@ export function HospitalRecommendationScreen({ navigation, route }) {
 
     const handleConfirmHospital = () => {
         if (selectedHospital) {
-            navigation.navigate('RealTimePathway', { hospital: selectedHospital });
+            navigation.navigate('Status', { hospital: selectedHospital });
         }
     };
 

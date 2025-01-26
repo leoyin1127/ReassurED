@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuthContext } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import config from '../../auth0-configuration';
 
 export function ProfileScreen() {
     const { userProfile, updateProfile, logout } = useAuthContext();
@@ -40,8 +42,16 @@ export function ProfileScreen() {
 
     // Add it to your logout function
     const handleLogout = async () => {
-        await clearAsyncStorage();
-        logout();  // your existing logout function
+        try {
+            // Clear local storage first
+            await clearAsyncStorage();
+            // Use the proper logout parameters
+            await logout({
+                returnTo: `${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/logout`
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
     };
 
     useEffect(() => {
@@ -50,41 +60,72 @@ export function ProfileScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <Image
-                    source={{ uri: userProfile?.picture }}
-                    style={styles.profilePicture}
-                />
-                <Text style={styles.name}>{userProfile?.name}</Text>
-                <Text style={styles.email}>{userProfile?.email}</Text>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Personal Information</Text>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Phone</Text>
-                    <Text style={styles.value}>{userProfile?.phoneNumber || 'Not set'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Emergency Contact</Text>
-                    <Text style={styles.value}>{userProfile?.emergencyContact || 'Not set'}</Text>
+            <View style={styles.card}>
+                <View style={styles.header}>
+                    <Image
+                        source={{ uri: userProfile?.picture || 'https://via.placeholder.com/150' }}
+                        style={styles.profilePicture}
+                    />
+                    <Text style={styles.name}>{userProfile?.name || 'User Name'}</Text>
+                    <Text style={styles.email}>{userProfile?.email || 'email@example.com'}</Text>
                 </View>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Medical Information</Text>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Allergies</Text>
-                    <Text style={styles.value}>{userProfile?.allergies || 'None'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                    <Text style={styles.label}>Medications</Text>
-                    <Text style={styles.value}>{userProfile?.medications || 'None'}</Text>
+            <View style={styles.card}>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Ionicons name="person-outline" size={24} color="#0056b3" />
+                        <Text style={styles.sectionTitle}>Personal Information</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Phone</Text>
+                        <Text style={styles.value}>{userProfile?.phoneNumber || 'Not set'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Emergency Contact</Text>
+                        <Text style={styles.value}>{userProfile?.emergencyContact || 'Not set'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Date of Birth</Text>
+                        <Text style={styles.value}>{userProfile?.dateOfBirth || 'Not set'}</Text>
+                    </View>
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Text style={styles.logoutText}>Logout</Text>
+            <View style={styles.card}>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Ionicons name="medical-outline" size={24} color="#0056b3" />
+                        <Text style={styles.sectionTitle}>Medical Information</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Blood Type</Text>
+                        <Text style={styles.value}>{userProfile?.bloodType || 'Not set'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Allergies</Text>
+                        <Text style={styles.value}>{userProfile?.allergies || 'None'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Medications</Text>
+                        <Text style={styles.value}>{userProfile?.medications || 'None'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                        <Text style={styles.label}>Medical Conditions</Text>
+                        <Text style={styles.value}>{userProfile?.conditions || 'None'}</Text>
+                    </View>
+                </View>
+            </View>
+
+            <TouchableOpacity style={styles.editButton}>
+                <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={[styles.editButton, styles.logoutButton]}
+                onPress={handleLogout}
+            >
+                <Text style={styles.editButtonText}>Logout</Text>
             </TouchableOpacity>
         </ScrollView>
     );
@@ -94,63 +135,86 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+        padding: 16,
+    },
+    card: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     header: {
-        backgroundColor: '#fff',
         alignItems: 'center',
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        paddingVertical: 16,
     },
     profilePicture: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 10,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        marginBottom: 16,
+        borderWidth: 3,
+        borderColor: '#0056b3',
     },
     name: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
+        marginBottom: 4,
     },
     email: {
         fontSize: 16,
         color: '#666',
+        marginBottom: 8,
     },
     section: {
-        backgroundColor: '#fff',
-        margin: 10,
-        padding: 15,
-        borderRadius: 10,
+        marginBottom: 8,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '600',
-        marginBottom: 15,
         color: '#333',
+        marginLeft: 8,
     },
     infoItem: {
-        marginBottom: 15,
+        marginBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+        paddingBottom: 12,
     },
     label: {
         fontSize: 14,
         color: '#666',
-        marginBottom: 5,
+        marginBottom: 4,
     },
     value: {
         fontSize: 16,
         color: '#333',
+        fontWeight: '500',
     },
-    logoutButton: {
-        margin: 10,
-        padding: 15,
-        backgroundColor: '#dc3545',
-        borderRadius: 10,
+    editButton: {
+        backgroundColor: '#0056b3',
+        padding: 16,
+        borderRadius: 8,
         alignItems: 'center',
+        marginBottom: 32,
     },
-    logoutText: {
+    editButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    logoutButton: {
+        backgroundColor: '#dc3545',  // Red color for logout
+        marginBottom: 32,
     },
 }); 

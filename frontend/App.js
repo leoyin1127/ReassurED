@@ -30,7 +30,7 @@ function App() {
         domain={config.domain}
         clientId={config.clientId}
         redirectUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/callback`}
-        logoutUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/logout`}
+        logoutUri={`${config.bundleIdentifier}.auth0://${config.domain}/ios/${config.bundleIdentifier}/callback`}
       >
         <AuthProvider>
           <NavigationContainer>
