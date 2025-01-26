@@ -1,0 +1,43 @@
+{
+  "name": "00-login-expo",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx expo start --dev-client",
+    "android": "npx expo run:android",
+    "ios": "npx expo run:ios",
+    "web": "npx expo start --web"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.0.0",
+    "@react-native-async-storage/async-storage": "1.21.0",
+    "@react-navigation/bottom-tabs": "^6.5.11",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.20",
+    "expo": "~52.0.0",
+    "expo-location": "~18.0.5",
+    "expo-secure-store": "~12.8.1",
+    "expo-splash-screen": "~0.26.4",
+    "expo-status-bar": "~1.11.1",
+    "firebase": "^10.8.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.76.6",
+    "react-native-auth0": "^3.0.0",
+    "react-native-dotenv": "^3.4.9",
+    "react-native-gesture-handler": "~2.14.0",
+    "react-native-maps": "1.10.0",
+    "react-native-reanimated": "~3.6.2",
+    "react-native-safe-area-context": "4.8.2",
+    "react-native-screens": "~3.29.0",
+    "react-native-web": "~0.19.10"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/plugin-transform-export-namespace-from": "^7.23.4",
+    "@babel/plugin-transform-template-literals": "^7.23.3",
+    "@babel/runtime": "^7.20.0",
+    "@react-native-community/cli-platform-ios": "^13.0.0"
+  },
+  "private": true,
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+}
